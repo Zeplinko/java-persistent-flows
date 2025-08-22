@@ -13,36 +13,47 @@ public class SamplePersistentFlow2 implements PersistentFlow {
                 )
                 .addStep(
                         BranchStep.<TransportChoice, String, String, String>of(
-                                (context, input) -> {
-                                    if (new Random().nextBoolean()) {
-                                        return new CheckpointWithOutput<>(
-                                                EnumCheckpoint.of(TransportChoice.TRAIN_AVAILABLE),
-                                                "Train Available"
-                                        );
-                                    }
-                                    return new CheckpointWithOutput<>(
-                                            EnumCheckpoint.of(TransportChoice.CAB_AVAILABLE),
-                                            "Cab Available"
-                                    );
-                                },
-                                (in, sub) -> {
-                                    sub.on(
-                                            EnumCheckpoint.of(TransportChoice.TRAIN_AVAILABLE), () -> Sequence.begin()
-                                                    .addStep(Step.of(
-                                                            Checkpoint.of("BOOK_TRAIN"),
-                                                            (context, input) -> "Train Booked"
-                                                    ))
-                                    );
-
-                                    sub.on(
-                                            EnumCheckpoint.of(TransportChoice.CAB_AVAILABLE), () -> Sequence.begin()
-                                                    .addStep(Step.of(
-                                                            Checkpoint.of("BOOK_CAB"),
-                                                            (context, input) -> "Cab Booked"
-                                                    ))
-                                    );
-                                }
-                        )
+                                        (context, input) -> {
+                                            int randomInt = new Random().nextInt(20);
+                                            if (randomInt > 10) {
+                                                return new CheckpointWithOutput<>(
+                                                        Checkpoint.of(TransportChoice.TRAIN_AVAILABLE),
+                                                        "Train Available"
+                                                );
+                                            }
+                                            if (randomInt > 5) {
+                                                return new CheckpointWithOutput<>(
+                                                        Checkpoint.of(TransportChoice.BUS_AVAILABLE),
+                                                        "Bus Available"
+                                                );
+                                            }
+                                            return new CheckpointWithOutput<>(
+                                                    Checkpoint.of(TransportChoice.CAB_AVAILABLE),
+                                                    "Cab Available"
+                                            );
+                                        }
+                                )
+                                .on(
+                                        Checkpoint.of(TransportChoice.TRAIN_AVAILABLE),
+                                        s -> Sequence.begin().addStep(Step.of(
+                                                Checkpoint.of("BOOK_TRAIN"),
+                                                (context, input) -> "Train Booked"
+                                        ))
+                                )
+                                .on(
+                                        Checkpoint.of(TransportChoice.BUS_AVAILABLE),
+                                        s -> Sequence.begin().addStep(Step.of(
+                                                Checkpoint.of("BOOK_BUS"),
+                                                (context, input) -> "Bus Booked"
+                                        ))
+                                )
+                                .on(
+                                        Checkpoint.of(TransportChoice.CAB_AVAILABLE),
+                                        s -> Sequence.begin().addStep(Step.of(
+                                                Checkpoint.of("BOOK_CAB"),
+                                                (context, input) -> "Cab Booked"
+                                        ))
+                                )
                 )
                 .addStep(
                         Step.of(Checkpoint.of("Send Booking"), (context, input) -> "Booking sent")

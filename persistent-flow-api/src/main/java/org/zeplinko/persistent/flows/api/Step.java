@@ -2,8 +2,8 @@ package org.zeplinko.persistent.flows.api;
 
 import org.zeplinko.persistent.flows.api.impl.StepImpl;
 
-public interface Step<T,U> {
-    static <T,U> Step<T, U> of(Checkpoint checkpoint, ThrowingBiFunction<PersistentFlowContext, T, U> function) {
+public interface Step<I,O> {
+    static <I, O> Step<I, O> of(Checkpoint checkpoint, ThrowingBiFunction<PersistentFlowContext, I, O> function) {
         return new StepImpl<>(checkpoint, function);
     }
 }

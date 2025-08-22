@@ -1,13 +1,14 @@
 package org.zeplinko.persistent.flows.api;
 
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-public interface BranchStep<T, U> extends Step<T, U> {
-    static <K extends Enum<K>, T, V, U> BranchStep<T, U> of(
-            ThrowingBiFunction<PersistentFlowContext, T, CheckpointWithOutput<K, V>> function,
-            BiConsumer<V, BranchStepSubsequence<K, U>> consumer
+public interface BranchStep<C extends Enum<C>, I, T, O> extends Step<I, O> {
+    static <C extends Enum<C>, I, T, O> BranchStep<C, I, T, O> of(
+            ThrowingBiFunction<PersistentFlowContext, I, CheckpointWithOutput<C, T>> function
     ) {
         return new BranchStepImpl<>();
     }
+
+    BranchStep<C, I, T, O> on(EnumCheckpoint<C> checkpoint, Function<T, Sequence<O>> function);
 
 }

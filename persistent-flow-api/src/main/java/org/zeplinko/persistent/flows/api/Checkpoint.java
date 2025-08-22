@@ -5,4 +5,8 @@ public interface Checkpoint {
         return new Checkpoint() {
         };
     }
+
+    static <T extends Enum<T>> EnumCheckpoint<T> of(T t) {
+        return null;
+    }
 }
