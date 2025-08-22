@@ -9,28 +9,40 @@ public class SamplePersistentFlow2 implements PersistentFlow {
     public void initialise(PersistentFlowContext persistentFlowContext) {
         Sequence<String> sequence = Sequence.begin()
                 .addStep(
-                        Step.of(Checkpoint.of("BOOK_FLIGHT"), (context, input) -> "Book Flight")
+                        Step.of(Checkpoint.of("BOOK_HOTEL"), (context, input) -> "Hotel Booked")
                 )
                 .addStep(
-                        Step.of(Checkpoint.of("BOOK_CAB"), (context, input) -> "Book Cab")
-                )
-                .addStep(
-                        BranchStep.of(
+                        BranchStep.<String, String, String>of(
                                 (context, input) -> {
                                     if (new Random().nextBoolean()) {
-                                        return Sequence.begin()
-                                                .addStep(Step.of(
-                                                        Checkpoint.of("BOOK_TRAIN"),
-                                                        (context2, input2) -> "Book Train"
-                                                ));
+                                        return new CheckpointWithOutput<>(
+                                                Checkpoint.of("TRAIN_AVAILABLE"),
+                                                "Train Available"
+                                        );
                                     }
-                                    return Sequence.begin()
-                                            .addStep(Step.of(
-                                                    Checkpoint.of("BOOK_BUS"),
-                                                    (context2, input2) -> "Book Bus"
-                                            ));
+                                    return new CheckpointWithOutput<>(Checkpoint.of("CAB_AVAILABLE"), "Cab Available");
+                                },
+                                (in, sub) -> {
+                                    sub.on(
+                                            Checkpoint.of("TRAIN_AVAILABLE"), () -> Sequence.begin()
+                                                    .addStep(Step.of(
+                                                            Checkpoint.of("BOOK_TRAIN"),
+                                                            (context, input) -> "Train Booked"
+                                                    ))
+                                    );
+
+                                    sub.on(
+                                            Checkpoint.of("CAB_AVAILABLE"), () -> Sequence.begin()
+                                                    .addStep(Step.of(
+                                                            Checkpoint.of("BOOK_CAB"),
+                                                            (context, input) -> "Cab Booked"
+                                                    ))
+                                    );
                                 }
                         )
+                )
+                .addStep(
+                        Step.of(Checkpoint.of("Send Booking"), (context, input) -> "Booking sent")
                 );
         persistentFlowContext.registerSequence(sequence);
     }
