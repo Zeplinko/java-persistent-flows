@@ -1,16 +1,10 @@
 package org.zeplinko.persistent.flows.api;
 
-import org.zeplinko.persistent.flows.api.impl.StepImpl;
-
-import java.util.function.Consumer;
-
-public interface BranchStep<T, U> extends Step<T,U> {
-    static <T,U,V> BranchStep<T, U> of(Checkpoint checkpoint,
-            ThrowingBiFunction<PersistentFlowContext, T, CheckpointWithOutput<V>> function,
-            Consumer<BranchStepSubsequence<V, U>> subsequenceRegisterer
+public interface BranchStep<T, U> extends Step<T, U> {
+    static <T, U> BranchStep<T, U> of(
+            ThrowingBiFunction<PersistentFlowContext, T, Sequence<U>> function
     ) {
-        return new BranchStepImpl<>(checkpoint, function);
+        return new BranchStepImpl<>();
     }
-
 
 }
