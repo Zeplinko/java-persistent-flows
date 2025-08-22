@@ -12,19 +12,22 @@ public class SamplePersistentFlow2 implements PersistentFlow {
                         Step.of(Checkpoint.of("BOOK_HOTEL"), (context, input) -> "Hotel Booked")
                 )
                 .addStep(
-                        BranchStep.<String, String, String>of(
+                        BranchStep.<TransportChoice, String, String, String>of(
                                 (context, input) -> {
                                     if (new Random().nextBoolean()) {
                                         return new CheckpointWithOutput<>(
-                                                Checkpoint.of("TRAIN_AVAILABLE"),
+                                                EnumCheckpoint.of(TransportChoice.TRAIN_AVAILABLE),
                                                 "Train Available"
                                         );
                                     }
-                                    return new CheckpointWithOutput<>(Checkpoint.of("CAB_AVAILABLE"), "Cab Available");
+                                    return new CheckpointWithOutput<>(
+                                            EnumCheckpoint.of(TransportChoice.CAB_AVAILABLE),
+                                            "Cab Available"
+                                    );
                                 },
                                 (in, sub) -> {
                                     sub.on(
-                                            Checkpoint.of("TRAIN_AVAILABLE"), () -> Sequence.begin()
+                                            EnumCheckpoint.of(TransportChoice.TRAIN_AVAILABLE), () -> Sequence.begin()
                                                     .addStep(Step.of(
                                                             Checkpoint.of("BOOK_TRAIN"),
                                                             (context, input) -> "Train Booked"
@@ -32,7 +35,7 @@ public class SamplePersistentFlow2 implements PersistentFlow {
                                     );
 
                                     sub.on(
-                                            Checkpoint.of("CAB_AVAILABLE"), () -> Sequence.begin()
+                                            EnumCheckpoint.of(TransportChoice.CAB_AVAILABLE), () -> Sequence.begin()
                                                     .addStep(Step.of(
                                                             Checkpoint.of("BOOK_CAB"),
                                                             (context, input) -> "Cab Booked"
